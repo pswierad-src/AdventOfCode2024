@@ -1,6 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using Day2;
+﻿using Day2;
 
 await Processor.RunTaskOne("files/test.txt");
 await Processor.RunTaskOne("files/input.txt");

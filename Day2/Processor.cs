@@ -1,10 +1,10 @@
 ﻿namespace Day2;
 
-internal class Processor
+internal static class Processor
 {
     public static async Task RunTaskOne(string path)
     {
-        var reports = new List<bool>();
+        var safe = 0;
 
         foreach (var line in await File.ReadAllLinesAsync(path))
         {
@@ -12,15 +12,16 @@ internal class Processor
 
             var result = CalculateSafety(levels);
 
-            reports.Add(result);
+            if (result)
+                safe++;
         }
 
-        Console.WriteLine($"Running task 1 for: {path} Safe reports: {reports.Count(r => r)}");
+        Console.WriteLine($"Running task 1 for: {path} Safe reports: {safe}");
     }
 
     public static async Task RunTaskTwo(string path)
     {
-        var reports = new List<bool>();
+        var safe = 0;
 
         foreach (var line in await File.ReadAllLinesAsync(path))
         {
@@ -46,10 +47,11 @@ internal class Processor
                 }
             }
 
-            reports.Add(result);
+            if (result)
+                safe++;
         }
 
-        Console.WriteLine($"Running task 2 for: {path} Safe reports: {reports.Count(r => r == true)}");
+        Console.WriteLine($"Running task 2 for: {path} Safe reports: {safe}");
     }
 
     private static bool CalculateSafety(List<int> levels)

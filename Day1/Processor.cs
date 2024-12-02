@@ -1,6 +1,6 @@
 ﻿namespace Day1;
 
-internal class Processor
+internal static class Processor
 {
     public static async Task RunTaskOne(string path)
     {
@@ -11,8 +11,8 @@ internal class Processor
         {
             var numbers = line.Split("   ");
 
-            leftNums.Add(int.Parse(numbers.First()));
-            rightNums.Add(int.Parse(numbers.Last()));
+            leftNums.Add(int.Parse(numbers[0]));
+            rightNums.Add(int.Parse(numbers[^1]));
         }
 
         leftNums.Sort();
@@ -43,20 +43,13 @@ internal class Processor
         {
             var numbers = line.Split("   ");
 
-            leftNums.Add(int.Parse(numbers.First()));
-            rightNums.Add(int.Parse(numbers.Last()));
+            leftNums.Add(int.Parse(numbers[0]));
+            rightNums.Add(int.Parse(numbers[^1]));
         }
 
         leftNums.Sort();
         rightNums.Sort();
 
-        var occurences = new List<int>();
-
-        foreach (var num in leftNums)
-        {
-            occurences.Add(num * rightNums.Count(n => n == num));
-        }
-
-        Console.WriteLine($"Running task 2 for: {path} Total distance: {occurences.Sum()}");
+        Console.WriteLine($"Running task 2 for: {path} Total distance: {leftNums.Select(num => num * rightNums.Count(n => n == num)).Sum()}");
     }
 }
