@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace Day12;
+﻿namespace Day12;
 
 public class Processor
 {
@@ -77,29 +75,32 @@ public class Processor
         return (fenceCount, plotCount);
     }
 
+    //As any polygon with n sides has n vertices we can use them to count sides
     private int CheckCorners(char[][] land, int y, int x)
     {
         var corners = 0;
+        
+        //Get values for checked cell and 8 of neighbouring cells
         TryGetPlot(land, y, x, out var current);
-
         TryGetPlot(land, y - 1, x, out var up);
         TryGetPlot(land, y + 1, x, out var down);
         TryGetPlot(land, y, x - 1, out var left);
         TryGetPlot(land, y, x+1, out var right);
-        
         TryGetPlot(land, y - 1, x - 1, out var leftup);
         TryGetPlot(land, y - 1, x + 1, out var rightup);
         TryGetPlot(land, y + 1, x + 1, out var rightdown);
         TryGetPlot(land, y+1, x-1, out var leftdown);
 
+        //If no neighbours then 4 corners
         if (up != current && down != current && left != current && right != current)
             return 4;
 
-        //horiz and vert
+        //If is horizontal or vertical meaning has 2 opposing neighbours then no corners
         if (left == current && right == current && up != current && down != current
             || up == current && down == current && left != current && right != current)
             return 0;
 
+        //If has + shape check only corners for corners :)
         if (left == current && right == current && up == current && down == current)
         {
             if(rightup != current)
@@ -117,6 +118,7 @@ public class Processor
             return corners;
         }
 
+        //Checking all variations of T shape neighbours - then checking the corners for values
         if (left == current && up == current && right == current)
         {
             if(leftup != current && leftup != '#')
@@ -161,8 +163,7 @@ public class Processor
             return corners;
         }
         
-        
-        
+        //If no T shape found, check all variations of L type corner neighbours
         if (up == current && right == current)
         {
             corners++;
@@ -203,6 +204,7 @@ public class Processor
             return corners;
         }
         
+        //If cell doesn't have either T shape of L shape neighbours, check if it has any neighbour - in this case corners always 2
         if (up == current || right == current || down == current || left == current)
             return 2;
 
@@ -222,6 +224,4 @@ public class Processor
             return false;
         }
     }
-    
-    
 }
