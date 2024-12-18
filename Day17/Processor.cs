@@ -1,81 +1,86 @@
 ﻿
+using System.Diagnostics;
+using System.Numerics;
+
 namespace Day17;
 
 public class Processor
 {
+    private string _path;
     private long _regA, _regB, _regC;
     private List<int> _operations = new();
     
     public async Task Run(string path)
     {
-        await SetRegAndOper(path);
-        //FindSelfCopy2(_operations.ToArray());
-        // Console.WriteLine(string.Join(',', RunOperations()));
-        // Console.WriteLine();
-        //Console.WriteLine($"Registry A value: {FindSelfCopy()}");
-  
-        var y = FindSelfCopy();
+        _path = path;
+        await SetRegAndOper(_path);
+        Console.WriteLine(string.Join(',', RunOperations(_operations.ToArray(), _regA, _regB, _regC)));
+        Console.WriteLine();
+        Console.WriteLine($"{FindStartingProgram(0, 1)}");
     }
-
     
-    private long FindSelfCopy()
+    private long? FindStartingProgram(long potentialA, int iteration)
     {
-        long potentialA;
+        SetRegAndOper(_path).Wait();
         
-        for (potentialA = 2; potentialA < (long)Math.Pow(8, _operations.Count); potentialA++)
+        if (_operations.Count - iteration < 0)
         {
-            _regA = potentialA;
-            var result = RunOperations();
-
-            Console.Clear();
-            Console.WriteLine(string.Join(',', _operations));
-            Console.WriteLine(string.Join(',', result));
-
-            if (_operations[^result.Count..].Select((op, i) => result[i] == op).Any(d => d == false)) 
-                continue;
-
-            if (_operations.Count == result.Count) 
-                break;
-            
-            potentialA = (potentialA * 8) - 1;
+            return potentialA;
         }
 
-        return potentialA;
+        for (var i = 0; i < 8; i++)
+        {
+            var result = RunOperations(
+                _operations.ToArray(),
+                potentialA * 8 + i,
+                _regB,
+                _regC);
+
+            if (result[0] != _operations[^iteration]) 
+                continue;
+            
+            var copy = FindStartingProgram(potentialA * 8 + i, iteration + 1);
+            
+            if(copy == null)
+                continue;
+            
+            return copy;
+        }
+
+        return null;
     }
 
-    private List<int> RunOperations()
+    private List<int> RunOperations(int[] program, long a, long b, long c)
     {
-        var localA = _regA;
-        var localB = _regB;
-        var localC = _regC;
+        var regs = new [] { a, b, c };
 
         var buffer = new List<int>();
         
-        for (var i = 0; i < _operations.Count;)
+        for (var i = 0; i < program.Length;)
         {
-            var operation = (Operations)_operations[i];
-            var operand = _operations[i + 1];
+            var operation = (Operations)program[i];
+            var operand = program[i + 1];
 
             long numerator = 0, denominator = 0;
             
             switch (operation)
             {
                 case Operations.Adv:
-                    numerator = localA;
+                    numerator = regs[0];
                     denominator = (long)Math.Pow(2, GetOperand(operand));
-                    localA = numerator / denominator;
+                    regs[0] = numerator / denominator;
                     i += 2;
                     break;
                 case Operations.Bxl:
-                    localB = localB ^ operand;
+                    regs[1] = regs[1] ^ operand;
                     i += 2;
                     break;
                 case Operations.Bst:
-                    localB = GetOperand(operand) % 8;
+                    regs[1] = GetOperand(operand) % 8;
                     i += 2;
                     break;
                 case Operations.Jnz:
-                    if (localA == 0)
+                    if (regs[0] == 0)
                     {
                         i += 2;
                         break;
@@ -83,7 +88,7 @@ public class Processor
                     i = operand;
                     break;
                 case Operations.Bxc:
-                    localB = localB ^ localC;
+                    regs[1] = regs[1] ^ regs[2];
                     i += 2;
                     break;
                 case Operations.Out:
@@ -91,15 +96,15 @@ public class Processor
                     i += 2;
                     break;
                 case Operations.Bdv:
-                    numerator = localA;
+                    numerator = regs[0];
                     denominator = (long)Math.Pow(2, GetOperand(operand));
-                    localB = numerator / denominator;
+                    regs[1] = numerator / denominator;
                     i += 2;
                     break;
                 case Operations.Cdv:
-                    numerator = localA;
+                    numerator = regs[0];
                     denominator = (long)Math.Pow(2, GetOperand(operand));
-                    localC = numerator / denominator;
+                    regs[2] = numerator / denominator;
                     i += 2;
                     break;
                 default:
@@ -116,9 +121,9 @@ public class Processor
                 1 => 1,
                 2 => 2,
                 3 => 3,
-                4 => localA,
-                5 => localB,
-                6 => localC,
+                4 => regs[0],
+                5 => regs[1],
+                6 => regs[2],
                 7 => throw new NotImplementedException(),
                 _ => throw new ArgumentOutOfRangeException()
             };
